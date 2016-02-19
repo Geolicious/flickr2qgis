@@ -20,18 +20,25 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt4.QtGui import QAction, QIcon
+#from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+#from PyQt4.QtGui import QAction, QIcon
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from qgis.core import *
+from qgis.gui import *
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
 from flickr2qgis_dialog import flickr2qgisDialog
 import os.path
-
+import flickrapi
+from qgis.gui import * #for the click event tool
+from xml.etree import ElementTree
+import urllib2, os, qgis.utils, os.path
+from datetime import datetime, timedelta
 
 class flickr2qgis:
     """QGIS Plugin Implementation."""
-
     def __init__(self, iface):
         """Constructor.
 
@@ -42,6 +49,9 @@ class flickr2qgis:
         """
         # Save reference to the QGIS interface
         self.iface = iface
+        self.canvas = self.iface.mapCanvas() #CHANGE
+        # this QGIS tool emits as QgsPoint after each click on the map canvas
+        self.clickTool = QgsMapToolEmitPoint(self.canvas)
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
@@ -67,6 +77,23 @@ class flickr2qgis:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'flickr2qgis')
         self.toolbar.setObjectName(u'flickr2qgis')
+        self.dlg.units.clear()
+        self.dlg.units.addItem("km")
+        self.dlg.units.addItem("miles")
+        self.dlg.enddate.setDate(QDate.currentDate())
+        today=QDate.currentDate()
+        self.dlg.startdate.setDate(today.addDays(-14))
+        self.dlg.lineEdit.clear()
+        self.dlg.pushButton.clicked.connect(self.select_output_file)
+        self.dlg.address.clear()
+        self.dlg.geocode.clicked.connect(self.geocodeAddress)
+        #self.dlg.getlatlon.clicked.connect(self.clickTool)
+        
+        #result = QObject.connect(self.clickTool, SIGNAL("canvasClicked(const QgsPoint &, Qt::MouseButton)"), self.handleMouseDown)
+
+        self.settings = QSettings("api", "sec")
+        self.dlg.secret_key.setText(self.settings.value("sec"))
+        self.dlg.api_key.setText(self.settings.value("api"))
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -166,7 +193,13 @@ class flickr2qgis:
             text=self.tr(u'load photos from flickr'),
             callback=self.run,
             parent=self.iface.mainWindow())
+        result = QObject.connect(self.clickTool, SIGNAL("canvasClicked(const QgsPoint &, Qt::MouseButton)"), self.handleMouseDown)
+    def handleMouseDown(self, point, button):
+        test=self.dlg.address.text()
+        self.dlg.lat.setValue(point.y())
+        self.dlg.lon.setValue(point.x())
 
+        #self.dlg.setTextBrowser( str(point.x()) + " , " +str(point.y()) )
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -177,16 +210,121 @@ class flickr2qgis:
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
         del self.toolbar
+    def select_output_file(self):
+        filename = QFileDialog.getSaveFileName(self.dlg, "Select output file ","", '*.shp')
+        self.dlg.lineEdit.setText(filename)
 
 
+    def geocodeAddress(self):
+        address = self.dlg.address.text().encode('utf-8')
+        url = "http://openls.geog.uni-heidelberg.de/testing2015/geocoding?apikey=e2017639f5e987e6dc1f5f69a66d049c"
+        text='<?xml version="1.0" encoding="UTF-8"?><xls:XLS xmlns:xls="http://www.opengis.net/xls" xmlns:sch="http://www.ascc.net/xml/schematron" xmlns:gml="http://www.opengis.net/gml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/xls http://schemas.opengis.net/ols/1.1.0/LocationUtilityService.xsd" version="1.1"><xls:RequestHeader/><xls:Request methodName="GeocodeRequest" requestID="123456789" version="1.1"><xls:GeocodeRequest><xls:Address countryCode="DE"><xls:freeFormAddress>' + address + '</xls:freeFormAddress></xls:Address></xls:GeocodeRequest></xls:Request></xls:XLS>'
+        req = urllib2.Request(url=url,
+            data=text,
+            headers={'Content-Type': 'application/xml'})
+        response_start=urllib2.urlopen(req).read()
+        #tidy up response
+        newstr = response_start.replace("\n", "")
+        response_start = newstr.replace("  ", "")
+        print response_start
+        xml = ElementTree.fromstring(response_start)
+        start_point =""
+        for child in xml[1][0]:
+            numberOfHits_start = child.attrib["numberOfGeocodedAddresses"]
+        if numberOfHits_start != "0":
+            start_point=xml[1][0][0][0][0][0].text
+        if start_point =="":
+            QtGui.QMessageBox.about(self.dlg, "No Coordinates Found", "Check your start address!")
+
+    #def handleMouseDown(self, point, button):
+    #    QMessageBox.information( self.iface.mainWindow(),"Info", "X,Y = %s,%s" % (str(point.x()),str(point.y())) )#
+    #    print str(point.x()), str(point.y())
+    #    self.dlg.lat.setValue()
     def run(self):
         """Run method that performs all the real work"""
         # show the dialog
         self.dlg.show()
+        self.canvas.setMapTool(self.clickTool)
+        
+            
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
             # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
+            # a with your code.
+
+            print self.dlg.lat.value()
+            print self.dlg.lon.value()
+            api = self.dlg.api_key.text().encode('utf-8')
+            sec = self.dlg.secret_key.text().encode('utf-8')
+            self.settings.setValue("api", api)
+            self.settings.setValue("sec", sec)
+            maxnum =self.dlg.maxnum.value()
+            startdate = self.dlg.startdate.dateTime()
+            enddate = self.dlg.enddate.dateTime()
+            keywords = self.dlg.keywords.text()
+            address = self.dlg.address.text()
+            lat = self.dlg.lat.value()
+            lon = self.dlg.lon.value()
+            radius = self.dlg.radius.value()
+            radius_units = self.dlg.units.currentText()
+            flickr = flickrapi.FlickrAPI(api, sec, format='parsed-json')
+            has_geo = 1
+            if self.dlg.disablegeo.checkState()==2:
+                json = flickr.photos.search(per_page=maxnum, max_upload_date=enddate, min_upload_date=startdate, text=keywords)
+            if self.dlg.disablegeo.checkState()==0:
+                json = flickr.photos.search(lon=lon, lat=lat, radius=radius, radius_units=radius_units, per_page=maxnum, max_upload_date=enddate, min_upload_date=startdate, text=keywords)
+            print json
+            print startdate
+            print enddate
+            print(len(json['photos']['photo']))
+            if len(json['photos']['photo'])>0:
+#as we have all photos, let's add some data to each of it.
+                print json['photos']['photo'][0]
+                layer = QgsVectorLayer('Point?crs=EPSG:4326', 'Accessibility', "memory")
+                pr = layer.dataProvider()
+                pr.addAttributes([QgsField("thumbnail", QVariant.String)])
+                pr.addAttributes([QgsField("title", QVariant.String)])
+                pr.addAttributes([QgsField("owner", QVariant.String)])
+                pr.addAttributes([QgsField("link", QVariant.String)])
+                pr.addAttributes([QgsField("desc", QVariant.String)])
+                pr.addAttributes([QgsField("lat", QVariant.Double)])
+                pr.addAttributes([QgsField("lon", QVariant.Double)])
+                pr.addAttributes([QgsField("country", QVariant.String)])
+                pr.addAttributes([QgsField("county", QVariant.String)])
+                pr.addAttributes([QgsField("region", QVariant.String)])
+                pr.addAttributes([QgsField("locality", QVariant.String)])
+                pr.addAttributes([QgsField("posted", QVariant.String)])
+                pr.addAttributes([QgsField("taken", QVariant.String)])
+
+                layer.updateFields()
+                for photo in json['photos']['photo']:
+                    fet = QgsFeature()
+                #now read additional information:
+                    details = flickr.photos.getInfo(photo_id=photo['id'])
+                    thumb = 'https://farm' + str(photo['farm']) + '.staticflickr.com/' + str(photo['server']) + '/' + str(photo['id'])+ '_' + str(photo['secret'])+ '_t.jpg'
+                    taken = details['photo']['dates']['taken']
+                    posted = details['photo']['dates']['posted']
+                    desc = details['photo']['description']['_content']
+                    latitude = details['photo']['location']['latitude']
+                    longitude = details['photo']['location']['longitude']
+                    country = details['photo']['location']['country']['_content']
+                    county = details['photo']['location']['county']['_content']
+                    region = details['photo']['location']['region']['_content']
+                    locality = details['photo']['location']['locality']['_content']
+                    owner =  details['photo']['owner']['username']
+                    title =  details['photo']['title']['_content']
+                    link = 'https://farm' + str(photo['farm']) + '.staticflickr.com/' + str(photo['server']) + '/' + str(photo['id'])+ '_' + str(photo['secret'])+ '_b.jpg'
+                    print([thumb, title, owner, link, desc, latitude, longitude, country, county, region, locality, posted, taken])
+                    fet.setGeometry(QgsGeometry.fromPoint(QgsPoint(float(details['photo']['location']['longitude']),float(details['photo']['location']['latitude']))))
+                    geom = fet.geometry()
+                    fet.setAttributes([thumb, title, owner, link, desc, latitude, longitude, country, county, region, locality, posted, taken])
+                    pr.addFeatures([fet])
+
+                QgsVectorFileWriter.writeAsVectorFormat(layer, "/tmp/access_berlin.shp", "CP1250", None, "ESRI Shapefile")
+
+
+
+
+
