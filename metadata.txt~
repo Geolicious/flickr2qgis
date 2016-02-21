@@ -11,7 +11,7 @@ name=flickr2qgis
 qgisMinimumVersion=2.0
 description=import photos as shapefile from flickr
 version=0.1
-author=Riccardo Klinger, Geolicious
+author=Riccardo Klinger / Geolicious
 email=riccardo.klinger@geolicious.de
 
 about=A plugin to search photos on flickr using a point, adress or region.

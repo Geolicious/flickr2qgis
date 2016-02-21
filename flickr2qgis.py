@@ -395,7 +395,7 @@ class flickr2qgis:
                     layer.updateExtents()
                     layer.triggerRepaint()
 
-                QgsVectorFileWriter.writeAsVectorFormat(layer, "/tmp/access_berlin.shp", "CP1250", None, "ESRI Shapefile")
+                QgsVectorFileWriter.writeAsVectorFormat(layer, tempfile.gettempdir() + os.sep + "flickr_res.shp", "CP1250", None, "ESRI Shapefile")
 
 
 
