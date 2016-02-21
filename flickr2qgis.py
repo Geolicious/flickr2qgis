@@ -278,11 +278,10 @@ class flickr2qgis:
             radius = self.dlg.radius.value()
             radius_units = self.dlg.units.currentText()
             flickr = flickrapi.FlickrAPI(api, sec, format='parsed-json')
-            has_geo = 1
             if self.dlg.disablegeo.checkState()==2:
-                json = flickr.photos.search(per_page=maxnum, max_upload_date=enddate, min_upload_date=startdate, text=keywords)
+                json = flickr.photos.search(per_page=maxnum, max_upload_date=enddate, min_upload_date=startdate, text=keywords, has_geo=1)
             if self.dlg.disablegeo.checkState()==0:
-                json = flickr.photos.search(lon=lon, lat=lat, radius=radius, radius_units=radius_units, per_page=maxnum, max_upload_date=enddate, min_upload_date=startdate, text=keywords)
+                json = flickr.photos.search(lon=lon, lat=lat, radius=radius, has_geo=1, radius_units=radius_units, per_page=maxnum, max_upload_date=enddate, min_upload_date=startdate, text=keywords)
             print json
             print startdate
             print enddate
