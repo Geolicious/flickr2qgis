@@ -106,7 +106,7 @@
       <item row="6" column="0">
        <widget class="QLabel" name="label_17">
         <property name="text">
-         <string>max. results</string>
+         <string>results (max #)</string>
         </property>
        </widget>
       </item>
@@ -139,22 +139,6 @@
       </item>
       <item row="5" column="1" colspan="2">
        <widget class="QLineEdit" name="keywords"/>
-      </item>
-      <item row="6" column="1">
-       <widget class="QDoubleSpinBox" name="maxnum">
-        <property name="decimals">
-         <number>3</number>
-        </property>
-        <property name="minimum">
-         <double>0.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>200.000000000000000</double>
-        </property>
-        <property name="value">
-         <double>25.000000000000000</double>
-        </property>
-       </widget>
       </item>
       <item row="2" column="1">
        <widget class="QGroupBox" name="groupBox">
@@ -228,11 +212,6 @@
           <double>180.000000000000000</double>
          </property>
         </widget>
-        <zorder>lat</zorder>
-        <zorder>label_7</zorder>
-        <zorder>label_8</zorder>
-        <zorder>lon</zorder>
-        <zorder>label_5</zorder>
        </widget>
       </item>
       <item row="4" column="1">
@@ -286,14 +265,6 @@
           </rect>
          </property>
         </widget>
-        <zorder>startdate</zorder>
-        <zorder>label_19</zorder>
-        <zorder>enddate</zorder>
-        <zorder>label_18</zorder>
-        <zorder>label_19</zorder>
-        <zorder>enddate</zorder>
-        <zorder>label_18</zorder>
-        <zorder>startdate</zorder>
        </widget>
       </item>
       <item row="2" column="0">
@@ -302,6 +273,40 @@
          <string>disable geo</string>
         </property>
        </widget>
+      </item>
+      <item row="6" column="2">
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="title">
+         <string/>
+        </property>
+        <widget class="QDoubleSpinBox" name="maxnum">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>81</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="minimum">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>200.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>25.000000000000000</double>
+         </property>
+        </widget>
+        <zorder>label_9</zorder>
+        <zorder>maxnum</zorder>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QComboBox" name="download"/>
       </item>
      </layout>
     </widget>
@@ -358,9 +363,6 @@
     </widget>
    </widget>
   </widget>
-  <zorder>button_box</zorder>
-  <zorder>tabWidget</zorder>
-  <zorder>horizontalLayoutWidget</zorder>
  </widget>
  <resources/>
  <connections>
