@@ -10,7 +10,7 @@
 name=flickr2qgis
 qgisMinimumVersion=2.0
 description=import photos as shapefile from flickr
-version=0.2
+version=0.2.1
 author=Riccardo Klinger, Geolicious
 email=riccardo.klinger@geolicious.de
 
@@ -23,7 +23,8 @@ repository=https://github.com/Geolicious/flickr2qgis
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=2016/02/22 v.0.2 removed all debug lines
+changelog=2016/02/22 v.0.2.1 increased number of maximum results
+	2016/02/22 v.0.2 removed all debug lines
 	2016/02/22 v.0.1.2 new icon in menu, fixed issue with printing debug lines
 	2016/02/22 v.0.1.1 created new icon
 	2016/02/22 v.0.1 initial commit
