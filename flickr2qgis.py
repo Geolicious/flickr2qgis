@@ -385,7 +385,6 @@ class flickr2qgis:
                     svgStyle['outline'] = '#000000'
                     svgStyle['size'] = '30'
                     symLyr1 = QgsSvgMarkerSymbolLayerV2.create(svgStyle)
-                    print symLyr1
                     sym = QgsSymbolV2.defaultSymbol(layer.geometryType())
                     sym.changeSymbolLayer(0, symLyr1)
                     category = QgsRendererCategoryV2(str(photo['id']), sym, str(photo['id']))
