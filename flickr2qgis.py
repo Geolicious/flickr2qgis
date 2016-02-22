@@ -232,7 +232,7 @@ class flickr2qgis:
         #tidy up response
         newstr = response_start.replace("\n", "")
         response_start = newstr.replace("  ", "")
-        print response_start
+        #print response_start
         xml = ElementTree.fromstring(response_start)
         start_point =""
         for child in xml[1][0]:
@@ -262,8 +262,8 @@ class flickr2qgis:
             # Do something useful here - delete the line containing pass and
             # a with your code.
 
-            print self.dlg.lat.value()
-            print self.dlg.lon.value()
+            #print self.dlg.lat.value()
+            #print self.dlg.lon.value()
             api = self.dlg.api_key.text().encode('utf-8')
             sec = self.dlg.secret_key.text().encode('utf-8')
             self.settings.setValue("api", api)
@@ -282,10 +282,10 @@ class flickr2qgis:
                 json = flickr.photos.search(per_page=maxnum, max_upload_date=enddate, min_upload_date=startdate, text=keywords, has_geo=1)
             if self.dlg.disablegeo.checkState()==0:
                 json = flickr.photos.search(lon=lon, lat=lat, radius=radius, has_geo=1, radius_units=radius_units, per_page=maxnum, max_upload_date=enddate, min_upload_date=startdate, text=keywords)
-            print json
-            print startdate
-            print enddate
-            print(len(json['photos']['photo']))
+            #print json
+            #print startdate
+            #print enddate
+            #print(len(json['photos']['photo']))
             if len(json['photos']['photo'])>0:
 #as we have all photos, let's add some data to each of it.
                 print json['photos']['photo'][0]
@@ -344,7 +344,7 @@ class flickr2qgis:
                     except: title = ""
                     try: link = 'https://farm' + str(photo['farm']) + '.staticflickr.com/' + str(photo['server']) + '/' + str(photo['id'])+ '_' + str(photo['secret'])+ '_b.jpg'
                     except: link = ""
-                    print([thumb, title, owner, link, desc, latitude, longitude, country, county, region, locality, posted, taken])
+                    #print([thumb, title, owner, link, desc, latitude, longitude, country, county, region, locality, posted, taken])
                     fet.setGeometry(QgsGeometry.fromPoint(QgsPoint(float(details['photo']['location']['longitude']),float(details['photo']['location']['latitude']))))
                     geom = fet.geometry()
                     fet.setAttributes([thumb,photoid, title, owner, link, desc, latitude, longitude, country, county, region, locality, posted, taken])
