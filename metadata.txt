@@ -14,7 +14,7 @@ version=0.2.1
 author=Riccardo Klinger, Geolicious
 email=riccardo.klinger@geolicious.de
 
-about=A plugin to search photos on flickr using a point, adress or region.
+about=A plugin to search photos on flickr using a point, address or region.
 
 tracker=https://github.com/Geolicious/flickr2qgis/issues
 repository=https://github.com/Geolicious/flickr2qgis
